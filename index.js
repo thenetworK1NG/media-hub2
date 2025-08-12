@@ -83,19 +83,18 @@ function prevTrack() {
     }).then(fetchCurrentTrack);
 }
 
-document.getElementById('login-btn').onclick = function() {
-    window.location = getLoginUrl();
-};
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('login-btn').onclick = function() {
+        window.location = getLoginUrl();
+    };
+    document.getElementById('play-btn').onclick = playTrack;
+    document.getElementById('pause-btn').onclick = pauseTrack;
+    document.getElementById('next-btn').onclick = nextTrack;
+    document.getElementById('prev-btn').onclick = prevTrack;
 
-document.getElementById('play-btn').onclick = playTrack;
-document.getElementById('pause-btn').onclick = pauseTrack;
-document.getElementById('next-btn').onclick = nextTrack;
-document.getElementById('prev-btn').onclick = prevTrack;
-
-window.onload = function() {
     const params = getHashParams();
     if (params.access_token) {
         accessToken = params.access_token;
         showPlayer();
     }
-};
+});
