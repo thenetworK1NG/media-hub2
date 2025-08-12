@@ -127,28 +127,59 @@ async function resumeTrack() {
     getCurrentPlayback();
 }
 
-document.getElementById('play-btn').onclick = resumeTrack;
-document.getElementById('pause-btn').onclick = pauseTrack;
-document.getElementById('next-btn').onclick = nextTrack;
-document.getElementById('prev-btn').onclick = prevTrack;
+// Playback button event listeners
+const playBtn = document.getElementById('play-btn');
+const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+const repeatBtn = document.getElementById('repeat-btn');
+const shuffleBtn = document.getElementById('shuffle-btn');
+
+let isPlaying = false;
+
+playBtn.onclick = async function() {
+    if (isPlaying) {
+        await pauseTrack();
+    } else {
+        await resumeTrack();
+    }
+};
+nextBtn.onclick = nextTrack;
+prevBtn.onclick = prevTrack;
+repeatBtn.onclick = async function() {
+    // Toggle repeat mode
+    await spotifyApi('me/player/repeat?state=context', 'PUT');
+    getCurrentPlayback();
+};
+shuffleBtn.onclick = async function() {
+    // Toggle shuffle mode
+    await spotifyApi('me/player/shuffle?state=true', 'PUT');
+    getCurrentPlayback();
+};
 
 // Playback info
 async function getCurrentPlayback() {
     const playback = await spotifyApi('me/player');
     if (!playback || !playback.item) return;
+    // Update footer info
     document.getElementById('track-name').textContent = playback.item.name;
     document.getElementById('artist-name').textContent = playback.item.artists.map(a => a.name).join(', ');
-    document.getElementById('album-name').textContent = playback.item.album.name;
-    document.getElementById('album-art').src = playback.item.album.images[0]?.url || '';
     document.getElementById('current-time').textContent = formatTime(playback.progress_ms);
     document.getElementById('duration').textContent = formatTime(playback.item.duration_ms);
-    const progressBar = document.getElementById('progress-bar');
-    progressBar.max = playback.item.duration_ms;
-    progressBar.value = playback.progress_ms;
-    progressBar.oninput = async function() {
-        await spotifyApi('me/player/seek?position_ms=' + this.value, 'PUT');
-        getCurrentPlayback();
-    };
+    // Update main player info
+    document.getElementById('track-name-main').textContent = playback.item.name;
+    document.getElementById('artist-name-main').textContent = playback.item.artists.map(a => a.name).join(', ');
+    document.getElementById('album-art').src = playback.item.album.images[0]?.url || '';
+    document.getElementById('player-main').style.display = 'block';
+    isPlaying = playback.is_playing;
+    // Change play button icon
+    const playIcon = playBtn.querySelector('i');
+    if (isPlaying) {
+        playIcon.classList.remove('fa-play');
+        playIcon.classList.add('fa-pause');
+    } else {
+        playIcon.classList.remove('fa-pause');
+        playIcon.classList.add('fa-play');
+    }
 }
 
 function formatTime(ms) {
