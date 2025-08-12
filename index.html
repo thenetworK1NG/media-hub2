@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Spotify Media Player</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="player-container">
+    <div id="player">
         <h1>Spotify Media Player</h1>
         <button id="login-btn">Login with Spotify</button>
-        <div id="player" style="display:none;">
-            <div id="track-info"></div>
+        <div id="controls" style="display:none;">
+            <img id="album-art" src="" alt="Album Art" width="200" />
+            <div id="track-info">
+                <span id="track-name"></span> - <span id="artist-name"></span>
+            </div>
+            <button id="prev-btn">Prev</button>
             <button id="play-btn">Play</button>
             <button id="pause-btn">Pause</button>
             <button id="next-btn">Next</button>
-            <button id="prev-btn">Previous</button>
         </div>
     </div>
-    <script src="app.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>
