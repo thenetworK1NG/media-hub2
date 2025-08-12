@@ -3,45 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Media Player</title>
+    <title>Custom Spotify Media Player</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Spotify Media Player</h1>
-            <button id="login-btn">Login with Spotify</button>
-        </header>
-        <main id="player-main" style="display:none;">
-            <div class="track-info">
-                <img id="album-art" src="" alt="Album Art">
-                <div>
-                    <h2 id="track-name">Track Name</h2>
-                    <p id="artist-name">Artist Name</p>
-                    <p id="album-name">Album Name</p>
-                </div>
-            </div>
-            <div class="controls">
-                <button id="prev-btn">⏮️</button>
-                <button id="play-btn">▶️</button>
-                <button id="pause-btn">⏸️</button>
-                <button id="next-btn">⏭️</button>
-            </div>
-            <div class="progress">
-                <span id="current-time">0:00</span>
-                <input type="range" id="progress-bar" value="0" min="0" max="100">
-                <span id="duration">0:00</span>
-            </div>
-            <div class="playlist">
-                <h3>Your Playlists</h3>
-                <ul id="playlist-list"></ul>
-            </div>
-            <div class="tracks">
-                <h3>Tracks</h3>
-                <ul id="track-list"></ul>
-            </div>
-        </main>
+    <div class="player-container">
+        <h1>Spotify Media Player</h1>
+        <button id="login-btn">Login with Spotify</button>
+        <div id="player" style="display:none;">
+            <div id="track-info"></div>
+            <button id="play-btn">Play</button>
+            <button id="pause-btn">Pause</button>
+            <button id="next-btn">Next</button>
+            <button id="prev-btn">Previous</button>
+        </div>
     </div>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
