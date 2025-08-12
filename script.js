@@ -150,7 +150,8 @@ async function loadLikedSongs() {
 // Playback controls
 async function playTrack(uri) {
     await spotifyApi('me/player/play', 'PUT', { uris: [uri] });
-    getCurrentPlayback();
+    // Wait a moment for Spotify to update playback, then refresh info
+    setTimeout(getCurrentPlayback, 700);
 }
 async function nextTrack() {
     await spotifyApi('me/player/next', 'POST');
