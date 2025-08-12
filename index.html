@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Media Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <div class="container">
+            <header>
+                <div class="playlist">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <div class="setting">
+                    <i class="fa fa-cog"></i>
+                </div>
+            </header>
+            <main id="player-main" style="display:none;">
+                <section class="player-area">
+                    <div class="album-art-wrapper">
+                        <img id="album-art" src="" alt="Album Art" class="album-art-img" />
+                    </div>
+                    <div class="track-info">
+                        <span id="track-name-main">Track Name</span>
+                        <span id="artist-name-main">Artist Name</span>
+                    </div>
+                    <div class="player-controls">
+                        <button class="player-btn" id="repeat-btn" title="Repeat"><i class="fa fa-repeat"></i></button>
+                        <button class="player-btn" id="prev-btn" title="Previous"><i class="fa fa-fast-backward"></i></button>
+                        <button class="player-btn play-btn" id="play-btn" title="Play"><i class="fa fa-play"></i></button>
+                        <button class="player-btn" id="next-btn" title="Next"><i class="fa fa-fast-forward"></i></button>
+                        <button class="player-btn" id="shuffle-btn" title="Shuffle"><i class="fa fa-random"></i></button>
+                    </div>
+                </section>
+            </main>
+            <footer>
+                <div class="title">
+                    <span id="track-name">Track Name</span> - <span id="artist-name">Artist Name</span>
+                </div>
+                <div class="time-tracker">
+                    <div class="timer">
+                        <div class="bg">
+                        </div>
+                    </div>
+                    <div class="time"><span id="current-time">0:00</span> / <span id="duration">0:00</span></div>
+                </div>
+            </footer>
+            <div class="playlist" style="margin-top:2rem;">
+                <h3>Your Playlists</h3>
+                <ul id="playlist-list"></ul>
+            </div>
+            <div class="tracks">
+                <h3>Tracks</h3>
+                <ul id="track-list"></ul>
+            </div>
+            <button id="login-btn" style="margin-top:2rem;">Login with Spotify</button>
+        </div>
+    <script src="script.js"></script>
+</body>
+</html>
