@@ -1,3 +1,28 @@
+// Song search functionality
+document.getElementById('song-search-btn').onclick = searchSongs;
+document.getElementById('song-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchSongs();
+});
+
+async function searchSongs() {
+    const query = document.getElementById('song-search-input').value.trim();
+    if (!query) return;
+    const results = await spotifyApi(`search?q=${encodeURIComponent(query)}&type=track&limit=20`);
+    const list = document.getElementById('track-list');
+    list.innerHTML = '';
+    if (results.tracks && results.tracks.items.length > 0) {
+        results.tracks.items.forEach(track => {
+            const li = document.createElement('li');
+            li.textContent = `${track.name} - ${track.artists.map(a => a.name).join(', ')}`;
+            li.onclick = () => playTrack(track.uri);
+            list.appendChild(li);
+        });
+    } else {
+        const li = document.createElement('li');
+        li.textContent = 'No results found.';
+        list.appendChild(li);
+    }
+}
 // Spotify API credentials
 const clientId = 'd91f367c3a62465db529d844a632846b';
 const redirectUri = window.location.origin + window.location.pathname;
