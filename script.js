@@ -83,19 +83,15 @@ async function loadUserPlaylists() {
     const playlists = await spotifyApi('me/playlists');
     const list = document.getElementById('playlist-list');
     list.innerHTML = '';
-    // Add liked songs option
-    const likedLi = document.createElement('li');
-    likedLi.textContent = 'Liked Songs';
-    likedLi.style.fontWeight = 'bold';
-    likedLi.onclick = loadLikedSongs;
-    list.appendChild(likedLi);
-    // Add user playlists
+    // Only user playlists
     playlists.items.forEach(pl => {
         const li = document.createElement('li');
         li.textContent = pl.name;
         li.onclick = () => loadPlaylistTracks(pl.id);
         list.appendChild(li);
     });
+    // Load liked songs into its own section
+    loadLikedSongs();
 }
 
 // Load tracks from playlist
@@ -115,14 +111,14 @@ async function loadPlaylistTracks(playlistId) {
 // Load liked songs
 async function loadLikedSongs() {
     const liked = await spotifyApi('me/tracks?limit=50');
-    const list = document.getElementById('track-list');
-    list.innerHTML = '';
+    const likedList = document.getElementById('liked-list');
+    likedList.innerHTML = '';
     liked.items.forEach(item => {
         const track = item.track;
         const li = document.createElement('li');
         li.textContent = `${track.name} - ${track.artists.map(a => a.name).join(', ')}`;
         li.onclick = () => playTrack(track.uri);
-        list.appendChild(li);
+        likedList.appendChild(li);
     });
 }
 
