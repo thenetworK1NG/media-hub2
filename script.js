@@ -1,0 +1,158 @@
+// Spotify API credentials
+const clientId = 'd91f367c3a62465db529d844a632846b';
+const redirectUri = window.location.origin + window.location.pathname;
+let accessToken = '';
+
+// PKCE helpers
+function generateCodeVerifier(length = 128) {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let codeVerifier = '';
+    for (let i = 0; i < length; i++) {
+        codeVerifier += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return codeVerifier;
+}
+
+async function generateCodeChallenge(codeVerifier) {
+    const data = new TextEncoder().encode(codeVerifier);
+    const digest = await window.crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}
+
+// Auth flow
+async function loginWithSpotify() {
+    const codeVerifier = generateCodeVerifier();
+    localStorage.setItem('code_verifier', codeVerifier);
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    const scope = 'user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative';
+    const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${clientId}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+    window.location = authUrl;
+}
+
+document.getElementById('login-btn').onclick = loginWithSpotify;
+
+// Handle redirect
+async function handleRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+    const codeVerifier = localStorage.getItem('code_verifier');
+    const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: codeVerifier
+    });
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+    });
+    const data = await response.json();
+    accessToken = data.access_token;
+    window.history.replaceState({}, document.title, redirectUri);
+    document.getElementById('login-btn').style.display = 'none';
+    document.getElementById('player-main').style.display = 'block';
+    loadUserPlaylists();
+    getCurrentPlayback();
+}
+
+handleRedirect();
+
+// Spotify API helpers
+async function spotifyApi(endpoint, method = 'GET', body = null) {
+    const url = `https://api.spotify.com/v1/${endpoint}`;
+    const options = {
+        method,
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    };
+    if (body) {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(body);
+    }
+    const res = await fetch(url, options);
+    return await res.json();
+}
+
+// Load playlists
+async function loadUserPlaylists() {
+    const playlists = await spotifyApi('me/playlists');
+    const list = document.getElementById('playlist-list');
+    list.innerHTML = '';
+    playlists.items.forEach(pl => {
+        const li = document.createElement('li');
+        li.textContent = pl.name;
+        li.onclick = () => loadPlaylistTracks(pl.id);
+        list.appendChild(li);
+    });
+}
+
+// Load tracks from playlist
+async function loadPlaylistTracks(playlistId) {
+    const tracks = await spotifyApi(`playlists/${playlistId}/tracks`);
+    const list = document.getElementById('track-list');
+    list.innerHTML = '';
+    tracks.items.forEach(item => {
+        const track = item.track;
+        const li = document.createElement('li');
+        li.textContent = `${track.name} - ${track.artists.map(a => a.name).join(', ')}`;
+        li.onclick = () => playTrack(track.uri);
+        list.appendChild(li);
+    });
+}
+
+// Playback controls
+async function playTrack(uri) {
+    await spotifyApi('me/player/play', 'PUT', { uris: [uri] });
+    getCurrentPlayback();
+}
+async function nextTrack() {
+    await spotifyApi('me/player/next', 'POST');
+    getCurrentPlayback();
+}
+async function prevTrack() {
+    await spotifyApi('me/player/previous', 'POST');
+    getCurrentPlayback();
+}
+async function pauseTrack() {
+    await spotifyApi('me/player/pause', 'PUT');
+    getCurrentPlayback();
+}
+async function resumeTrack() {
+    await spotifyApi('me/player/play', 'PUT');
+    getCurrentPlayback();
+}
+
+document.getElementById('play-btn').onclick = resumeTrack;
+document.getElementById('pause-btn').onclick = pauseTrack;
+document.getElementById('next-btn').onclick = nextTrack;
+document.getElementById('prev-btn').onclick = prevTrack;
+
+// Playback info
+async function getCurrentPlayback() {
+    const playback = await spotifyApi('me/player');
+    if (!playback || !playback.item) return;
+    document.getElementById('track-name').textContent = playback.item.name;
+    document.getElementById('artist-name').textContent = playback.item.artists.map(a => a.name).join(', ');
+    document.getElementById('album-name').textContent = playback.item.album.name;
+    document.getElementById('album-art').src = playback.item.album.images[0]?.url || '';
+    document.getElementById('current-time').textContent = formatTime(playback.progress_ms);
+    document.getElementById('duration').textContent = formatTime(playback.item.duration_ms);
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.max = playback.item.duration_ms;
+    progressBar.value = playback.progress_ms;
+    progressBar.oninput = async function() {
+        await spotifyApi('me/player/seek?position_ms=' + this.value, 'PUT');
+        getCurrentPlayback();
+    };
+}
+
+function formatTime(ms) {
+    const min = Math.floor(ms / 60000);
+    const sec = Math.floor((ms % 60000) / 1000);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+}
